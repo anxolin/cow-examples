@@ -8,7 +8,6 @@ const EXPLORER_URL = 'https://explorer.cow.fi/orders'
 
 function App() {
   const [orders, setOrders] = useState([])
-
   useEffect(()=> {
     cowSdk.cowApi.getOrders({
       owner: '0x00000000005ef87f8ca7014309ece7260bbcdaeb', // Trader

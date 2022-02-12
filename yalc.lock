@@ -1,0 +1,10 @@
+{
+  "version": "v1",
+  "packages": {
+    "@gnosis.pm/cow-sdk": {
+      "signature": "b1903548f8e297e920274cf51cefc190",
+      "file": true,
+      "replaced": "0.0.4"
+    }
+  }
+}
