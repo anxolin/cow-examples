@@ -12,6 +12,11 @@ body {
   font-size: 13pt;
 }
 
+footer {
+  margin-top: 80px;
+  text-align: right;
+}
+
 .form > div { margin: 15px }
 .form label { font-weight: 800; margin-right: 10px }
 .form button { margin: 10px; padding: 5px; }

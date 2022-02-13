@@ -17,6 +17,12 @@ function Home() {
         <li><Link to="/post-order">Post an order</Link></li>
         </ul>
       </nav>
+      <footer>
+        © Anxo -{' '}
+        <a href='https://github.com/anxolin/cow-examples' target="_blank" rel="noreferrer">
+            Github
+        </a>
+      </footer>
     </>
   );
 }
