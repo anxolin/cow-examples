@@ -2,9 +2,10 @@ import { Link } from "react-router-dom";
 import { CowSdk } from '@gnosis.pm/cow-sdk'
 import { useEffect, useState } from 'react';
 
+const EXPLORER_URL = 'https://explorer.cow.fi/orders'
+
 const chainId = 1
 const cowSdk = new CowSdk(chainId)
-const EXPLORER_URL = 'https://explorer.cow.fi/orders'
 
 export function Orders() {
   const [orders, setOrders] = useState([])
@@ -20,10 +21,16 @@ export function Orders() {
     <>
       <h3>Last 5 orders</h3>
       <ul>
-        {orders.length > 0 ? orders.map(order => {
+        {orders.map(order => {
           console.log(order)
-          return <li key={order.uid}><a href={EXPLORER_URL + '/' + order.uid} target="_blank" rel="noreferrer">{order.uid}</a></li>
-        }): 'No orders'}
+          return (
+            <li key={order.uid}>
+              <a href={EXPLORER_URL + '/' + order.uid} target="_blank" rel="noreferrer">
+                {order.uid}
+              </a>
+            </li>
+          )
+        })}
         
       </ul>
       <nav>
