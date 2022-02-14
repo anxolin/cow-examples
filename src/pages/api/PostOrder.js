@@ -6,12 +6,30 @@ import {ethers} from 'ethers'
 
 const EXPLORER_URL = 'https://explorer.cow.fi/orders'
 const ORDER_BASE_DEFAULT = {
-  kind: OrderKind.SELL, // Sell order (could also be BUY)
-  sellToken: '0xc778417e063141139fce010982780140aa0cd5ab', // WETH
-  buyToken: '0x4dbcdf9b62e891a7cec5a2568c3f4faf9e8abe2b',  // USDC
-  amount: '10000000000000000', // 0.001 WETH
-  userAddress: '0x1811be0994930fe9480eaede25165608b093ad7a', // Trader
-  validTo: 2524608000,
+  4: {
+    kind: OrderKind.SELL, // Sell order (could also be BUY)
+    sellToken: '0xc778417e063141139fce010982780140aa0cd5ab', // WETH
+    buyToken: '0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea',  // DAI
+    amount: '10000000000000000', // 0.001 WETH
+    userAddress: '0x1811be0994930fe9480eaede25165608b093ad7a', // Trader
+    validTo: 2524608000,
+  },
+  1: {
+    kind: OrderKind.SELL, // Sell order (could also be BUY)
+    sellToken: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', // WETH
+    buyToken: '0x6b175474e89094c44da98b954eedeac495271d0f',  // DAI
+    amount: '10000000000000000', // 0.001 WETH
+    userAddress: '0x1811be0994930fe9480eaede25165608b093ad7a', // Trader
+    validTo: 2524608000,
+  },
+  DEFAULT: {
+    kind: OrderKind.SELL, // Sell order (could also be BUY)
+    sellToken: '', 
+    buyToken: '', 
+    amount: '10000000000000000',
+    userAddress: '0x1811be0994930fe9480eaede25165608b093ad7a', // Trader
+    validTo: 2524608000,
+  }
 }
 
 
@@ -22,13 +40,20 @@ export function PostOrders() {
   const [connectedAccount, setConnectedAccount] = useState(false)
   const [cowSdk, setCowSdk] = useState()
 
-  const [orderBase, setOrderBase] = useState(ORDER_BASE_DEFAULT)
+  const [orderBase, setOrderBase] = useState(ORDER_BASE_DEFAULT.DEFAULT)
   const [orderQuote, setOrderQuote] = useState()
   const [signedOrder, setSignedOrder] = useState()
   const [orderUid, setOrderUid] = useState()  
+  const [error, setError] = useState()  
 
   const { kind, sellToken, buyToken, amount, userAddress, validTo } = orderBase
   const isSell = kind === OrderKind.SELL
+
+  const handleError = (e, message) => {
+    console.error(message, e)
+    setError(`${message}: ${e.message}`)
+    setTimeout(() => setError(''), 10000)
+  }
 
   const connect = () => {
     provider.send("eth_requestAccounts", [])
@@ -36,28 +61,35 @@ export function PostOrders() {
         const account = accounts[0]
         setConnectedAccount(account)
         const { chainId } = await provider.getNetwork()
+
+        let orderBase = ORDER_BASE_DEFAULT[chainId] || ORDER_BASE_DEFAULT.DEFAULT
+        setOrderBase({ ...orderBase, userAddress: account })
+        
         const cowSdk = new CowSdk(chainId, { signer: provider.getSigner() })
         setCowSdk(cowSdk)
 
         console.log(`Connected to ${chainId} using ${account}. SDK: `, cowSdk)
       })
-      .catch(e => console.error('Error connecting', e))
+      .catch(error => handleError(error, 'Error connecting'))
   }
 
   const getQuote = () => {
     if (!cowSdk) return
-
+    
+    setError('')
     cowSdk.cowApi.getQuote(orderBase)
       .then(quote => {
         setOrderQuote(quote)
       })
-      .catch(error => console.error('Error getting quote for ', orderBase, error))    
+      .catch(error => handleError(error, 'Error getting quote'))    
   }
 
   const signOrder = () => {
     if (!cowSdk || !orderQuote) return
 
+    
     const rawOrder = orderQuote.quote
+    setError('')
     cowSdk.signOrder(rawOrder)
       .then(signed => {
         setSignedOrder({
@@ -65,19 +97,20 @@ export function PostOrders() {
           ...signed
         })
       })
-      .catch(error => console.error('Error signing order', rawOrder, error))
+      .catch(error => handleError(error, 'Error signing order'))
   }
 
   const postOrder = () => {
     if (!cowSdk || !signedOrder) return
 
+    setError('')
     cowSdk.cowApi
       .sendOrder({
         order: signedOrder,
         owner: connectedAccount,
       })
       .then(setOrderUid)
-      .catch(error => console.error('Error posting signed order', signedOrder, error))
+      .catch(error => handleError(error, 'Error posting signed order'))
   }
 
   const setValue = (event) => {
@@ -101,20 +134,23 @@ export function PostOrders() {
   return (
     <>
       <h3>Post an order</h3>
-
+      
       {!connectedAccount ? (
         <button type="button" onClick={connect}>Connect Wallet</button>
       ): (
         <div className="form">
+          {error && (
+            <p style={{ color: "red" }}>⚠️ {error}</p>
+          )}
           <p>
           Connected with <strong>{connectedAccount}</strong>
           </p>
           <h3>New Order</h3>
           <div>
-            <label htmlFor="kindSell">Sell Order</label>
             <input type="radio" id="kindSell" checked={isSell} onChange={setValue} />
-            <label htmlFor="kindBuy">Sell Order</label>
+            <label htmlFor="kindSell">Sell Order</label>
             <input type="radio" id="kindBuy" checked={!isSell} onChange={setValue} />
+            <label htmlFor="kindBuy">Buy Order</label>
           </div>
           <div>
             <label htmlFor="sellToken">Sell Token:</label>
