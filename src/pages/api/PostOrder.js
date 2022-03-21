@@ -182,11 +182,17 @@ export function PostOrders() {
               </div>
               <div>
                 <label htmlFor="expiration">Buy Amount:</label>
-                <input readOnly type="text" id="expiration" value={orderQuote.quote.buyAmount} size="35" />              
+                <input
+                  onChange={event => setOrderQuote({ ...orderQuote, quote: { ...orderQuote.quote, buyAmount: event.target.value }  })}
+                  type="text" id="buyAmount" value={orderQuote.quote.buyAmount} size="35" 
+                />      
               </div>
               <div>
                 <label htmlFor="expiration">Sell Amount:</label>
-                <input readOnly type="text" id="expiration" value={orderQuote.quote.sellAmount} size="35" />              
+                <input 
+                  onChange={event => setOrderQuote({ ...orderQuote, quote: { ...orderQuote.quote, sellAmount: event.target.value }  })}
+                  type="text" id="sellAmount" value={orderQuote.quote.sellAmount} size="35" 
+                />              
               </div>
             </>
           )}
